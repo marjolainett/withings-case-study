@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Loop</title>
+
+    <style>
+      /* Some style to reset default margin/padding */
+      body,
+      html {
+        width: 100%;
+        height: 100%;
+        position: relative;
+        margin: 0;
+        padding: 0;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      p,
+      h1,
+      h2,
+      h3,
+      span {
+        margin: 0;
+        padding: 0;
+      }
+
+      /* Begin your own style here */
+      iframe {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        border: none;
+      }
+
+      #controls {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        height: 45px;
+        width: 80px;
+        padding: 5px;
+        background-color: rgba(255, 255, 255, 0.5);
+        border-radius: 5px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-around;
+      }
+
+      #controls div {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+      }
+
+      .clickable {
+        cursor: pointer;
+        margin: 0 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="controls">
+      <div id="timer">30</div>
+      <div>
+        <div id="previous" class="clickable">&#9198;</div>
+        <div id="play-pause" class="clickable">&#9208;</div>
+        <div id="next" class="clickable">&#9197;</div>
+      </div>
+    </div>
+    <iframe
+      id="website-display"
+      src="https://theuselessweb.com/"
+      target="_self"
+    ></iframe>
+
+    <script>
+      // TODO :
+      // 1. Every 30 seconds, you will display a new website from an array of urls (see websitesUrls below).
+      // 2. At the end of the array, we return to the beginning
+      // 3. The website displayed need to be fullscreen, it takes all the width and height of the viewport
+      // 4. Add timer and controls : display the timer before the next website , with buttons for controls (see bonus).
+      // 5. Add a nice style/css on the controls div. It must be always visible on top of the displayed website.
+      // 6. Bonus : add controls to go to previous or next website without waiting the end of the timer
+      // 7. Bonus : add a play/pause button to stop the timer and keep current website.
+      // If you go to previous/next website with timer pausing, keep the pause. Else, reset timer.
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const websitesUrls = [
+          "https://theuselessweb.com/",
+          "http://www.fallingfalling.com/",
+          "http://www.staggeringbeauty.com/",
+          "http://www.koalastothemax.com/",
+          "http://corndog.io/",
+          "http://randomcolour.com/",
+          "https://smashthewalls.com/",
+          "https://checkboxrace.com/",
+          // add more websites if you want
+        ];
+
+        let currentIndex = 0;
+        let isPaused = false;
+        let startTime = Date.now();
+        let remainingTime = 30000;
+        let timerInterval;
+
+        const iframe = document.getElementById("website-display");
+        const timerDisplay = document.getElementById("timer");
+        const playPauseButton = document.getElementById("play-pause");
+        const previousButton = document.getElementById("previous");
+        const nextButton = document.getElementById("next");
+
+        const changeWebsite = (index) => {
+          iframe.src = websitesUrls[index];
+        };
+
+        const updateTimerDisplay = (time) => {
+          timerDisplay.textContent = Math.ceil(time / 1000);
+        };
+
+        const startTimer = () => {
+          timerInterval = setInterval(() => {
+            if (!isPaused) {
+              const elapsedTime = Date.now() - startTime;
+              remainingTime -= elapsedTime;
+              startTime = Date.now();
+              if (remainingTime <= 0) {
+                currentIndex = (currentIndex + 1) % websitesUrls.length;
+                changeWebsite(currentIndex);
+                resetTimer();
+              } else {
+                updateTimerDisplay(remainingTime);
+              }
+            }
+          }, 100);
+        };
+
+        const pauseTimer = () => {
+          clearInterval(timerInterval);
+          isPaused = true;
+        };
+
+        const resumeTimer = () => {
+          isPaused = false;
+          startTime = Date.now();
+          startTimer();
+        };
+
+        const resetTimer = () => {
+          clearInterval(timerInterval);
+          remainingTime = 30000;
+          startTime = Date.now();
+          updateTimerDisplay(remainingTime);
+          if (!isPaused) startTimer();
+        };
+
+        playPauseButton.addEventListener("click", () => {
+          if (isPaused) {
+            playPauseButton.textContent = "\u23F8";
+            resumeTimer();
+          } else {
+            playPauseButton.textContent = "\u23F5";
+            pauseTimer();
+          }
+        });
+
+        previousButton.addEventListener("click", () => {
+          currentIndex =
+            (currentIndex - 1 + websitesUrls.length) % websitesUrls.length;
+          changeWebsite(currentIndex);
+          if (!isPaused) {
+            resetTimer();
+          } else {
+            startTime = Date.now();
+            updateTimerDisplay(remainingTime);
+          }
+        });
+
+        nextButton.addEventListener("click", () => {
+          currentIndex = (currentIndex + 1) % websitesUrls.length;
+          changeWebsite(currentIndex);
+          if (!isPaused) {
+            resetTimer();
+          } else {
+            startTime = Date.now();
+            updateTimerDisplay(remainingTime);
+          }
+        });
+
+        changeWebsite(currentIndex);
+        updateTimerDisplay(remainingTime);
+        startTimer();
+      });
+    </script>
+  </body>
+</html>
